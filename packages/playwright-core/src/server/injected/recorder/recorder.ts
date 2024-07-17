@@ -211,6 +211,15 @@ class RecordActionTool implements RecorderTool {
   private _activeModel: HighlightModel | null = null;
   private _expectProgrammaticKeyUp = false;
   private _pendingClickAction: { action: actions.ClickAction, timeout: number } | undefined;
+  private _down?: {
+    x: number;
+    y: number;
+    hover: {
+      x: number;
+      y: number;
+      selector: string;
+    }
+  }
 
   constructor(recorder: Recorder) {
     this._recorder = recorder;
@@ -225,6 +234,11 @@ class RecordActionTool implements RecorderTool {
     this._hoveredElement = null;
     this._activeModel = null;
     this._expectProgrammaticKeyUp = false;
+  }
+
+  private isClick(event: MouseEvent){
+    const clickTolerance = 5;
+    return !this._down || (Math.abs(event.clientX - this._down.x) <= clickTolerance && Math.abs(event.clientY - this._down.y) <= clickTolerance);
   }
 
   onClick(event: MouseEvent) {
@@ -285,6 +299,7 @@ class RecordActionTool implements RecorderTool {
 
     this._cancelPendingClickAction();
 
+    // this.isClick(event) &&
     this._performAction({
       name: 'click',
       selector: this._hoveredModel!.selector,
@@ -331,30 +346,72 @@ class RecordActionTool implements RecorderTool {
   }
 
   onPointerDown(event: PointerEvent) {
+    if (this._hoveredModel && (event.target as HTMLElement).nodeName === 'CANVAS') {
+      this._down = {
+        x: event.x,
+        y: event.y,
+        hover: {
+          x: event.offsetX,
+          y: event.offsetY,
+          selector: this._hoveredModel.selector
+        }
+      };
+    }
     if (this._shouldIgnoreMouseEvent(event))
       return;
-    if (!this._performingActions.size)
-      consumeEvent(event);
+    // if (!this._performingActions.size)
+    //   consumeEvent(event);
   }
 
   onPointerUp(event: PointerEvent) {
     if (this._shouldIgnoreMouseEvent(event))
       return;
+    this._down && !this.isClick(event) && this._performAction({
+      name: 'move',
+      hover: { selector: this._down.hover.selector, x: Math.round(this._down.hover.x), y: Math.round(this._down.hover.y) },
+      down: { x: Math.round(this._down.x), y: Math.round(this._down.y) },
+      up: { x: Math.round(event.clientX), y: Math.round(event.clientY) },
+      signals: [],
+      button: buttonForEvent(event),
+      modifiers: modifiersForEvent(event),
+    });
+    delete this._down;
     if (!this._performingActions.size)
       consumeEvent(event);
   }
 
   onMouseDown(event: MouseEvent) {
+    if (this._hoveredModel && (event.target as HTMLElement).nodeName === 'CANVAS') {
+      this._down = {
+        x: event.x,
+        y: event.y,
+        hover: {
+          x: event.offsetX,
+          y: event.offsetY,
+          selector: this._hoveredModel.selector
+        }
+      };
+    }
     if (this._shouldIgnoreMouseEvent(event))
       return;
-    if (!this._performingActions.size)
-      consumeEvent(event);
+    // if (!this._performingActions.size)
+    //   consumeEvent(event);
     this._activeModel = this._hoveredModel;
   }
 
   onMouseUp(event: MouseEvent) {
     if (this._shouldIgnoreMouseEvent(event))
       return;
+    this._down && !this.isClick(event) && this._performAction({
+      name: 'move',
+      hover: { selector: this._down.hover.selector, x: Math.round(this._down.hover.x), y: Math.round(this._down.hover.y) },
+      down: { x: Math.round(this._down.x), y: Math.round(this._down.y) },
+      up: { x: Math.round(event.clientX), y: Math.round(event.clientY) },
+      signals: [],
+      button: buttonForEvent(event),
+      modifiers: modifiersForEvent(event),
+    });
+    delete this._down;
     if (!this._performingActions.size)
       consumeEvent(event);
   }
