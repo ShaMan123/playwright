@@ -21,6 +21,7 @@ export type ActionName =
   'click' |
   'closePage' |
   'fill' |
+  'move' |
   'navigate' |
   'openPage' |
   'press' |
@@ -66,6 +67,15 @@ export type FillAction = ActionBase & {
 export type NavigateAction = ActionBase & {
   name: 'navigate',
   url: string,
+};
+
+export type MoveAction = ActionBase & {
+  name: 'move';
+  button: 'left' | 'middle' | 'right';
+  modifiers: number;
+  hover: Point & { selector: string; };
+  down: Point;
+  up: Point;
 };
 
 export type OpenPageAction = ActionBase & {
@@ -128,7 +138,7 @@ export type AssertVisibleAction = ActionBase & {
   selector: string,
 };
 
-export type Action = ClickAction | CheckAction | ClosesPageAction | OpenPageAction | UncheckAction | FillAction | NavigateAction | PressAction | SelectAction | SetInputFilesAction | SnapshotAction | AssertTextAction | AssertValueAction | AssertCheckedAction | AssertVisibleAction;
+export type Action = ClickAction | CheckAction | ClosesPageAction | OpenPageAction | UncheckAction | FillAction | NavigateAction | MoveAction | PressAction | SelectAction | SetInputFilesAction | SnapshotAction | AssertTextAction | AssertValueAction | AssertCheckedAction | AssertVisibleAction;
 export type AssertAction = AssertCheckedAction | AssertValueAction | AssertTextAction | AssertVisibleAction;
 
 // Signals.
