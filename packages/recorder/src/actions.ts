@@ -27,6 +27,7 @@ export type ActionName =
   'select' |
   'uncheck' |
   'setInputFiles' |
+  'snapshot' |
   'assertText' |
   'assertValue' |
   'assertChecked' |
@@ -93,6 +94,14 @@ export type SetInputFilesAction = ActionWithSelector & {
   files: string[],
 };
 
+export type SnapshotAction = ActionBase & {
+  name: 'snapshot',
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+};
+
 export type AssertTextAction = ActionWithSelector & {
   name: 'assertText',
   text: string,
@@ -113,7 +122,7 @@ export type AssertVisibleAction = ActionWithSelector & {
   name: 'assertVisible',
 };
 
-export type Action = ClickAction | CheckAction | ClosesPageAction | OpenPageAction | UncheckAction | FillAction | NavigateAction | PressAction | SelectAction | SetInputFilesAction | AssertTextAction | AssertValueAction | AssertCheckedAction | AssertVisibleAction;
+export type Action = ClickAction | CheckAction | ClosesPageAction | OpenPageAction | UncheckAction | FillAction | NavigateAction | PressAction | SelectAction | SetInputFilesAction | SnapshotAction | AssertTextAction | AssertValueAction | AssertCheckedAction | AssertVisibleAction;
 export type AssertAction = AssertCheckedAction | AssertValueAction | AssertTextAction | AssertVisibleAction;
 export type PerformOnRecordAction = ClickAction | CheckAction | UncheckAction | PressAction | SelectAction;
 

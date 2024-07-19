@@ -215,8 +215,8 @@ export class Recorder implements InstrumentationListener, IRecorder {
     this._highlightedSelector = '';
     this._mode = mode;
     this._recorderApp?.setMode(this._mode);
-    this._contextRecorder.setEnabled(this._mode === 'recording' || this._mode === 'assertingText' || this._mode === 'assertingVisibility' || this._mode === 'assertingValue');
-    this._debugger.setMuted(this._mode === 'recording' || this._mode === 'assertingText' || this._mode === 'assertingVisibility' || this._mode === 'assertingValue');
+    this._contextRecorder.setEnabled(this._mode === 'recording' || this._mode === 'assertingText' || this._mode === 'assertingVisibility' || this._mode === 'assertingValue' || this._mode === 'takingSnapshot');
+    this._debugger.setMuted(this._mode === 'recording' || this._mode === 'assertingText' || this._mode === 'assertingVisibility' || this._mode === 'assertingValue' || this._mode === 'takingSnapshot');
     if (this._mode !== 'none' && this._mode !== 'standby' && this._context.pages().length === 1)
       this._context.pages()[0].bringToFront().catch(() => {});
     this._refreshOverlay();

@@ -786,6 +786,91 @@ class TextAssertionTool implements RecorderTool {
   }
 }
 
+class TakingSnapshotTool implements RecorderTool {
+  private _recorder: Recorder;
+  private _down?: { x: number; y: number; el: HTMLDivElement };
+
+  constructor(recorder: Recorder){
+    this._recorder = recorder;
+  }
+
+  private toBoundingBox(a: Point, b: Point){
+    const minX = Math.min(a.x, b.x);
+    const minY = Math.min(a.y, b.y);
+    const maxX = Math.max(a.x, b.x);
+    const maxY = Math.max(a.y, b.y);
+
+    return {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+    };
+  }
+
+  cursor(): string {
+    return 'pointer';
+  }
+
+  onPointerDown(event: PointerEvent): void {
+    event.stopImmediatePropagation()
+    event.stopPropagation()
+  }
+
+  onMouseDown(event: MouseEvent): void {
+    consumeEvent(event);
+    const el = this._recorder.document.createElement('div');
+    Object.assign(el.style, {
+      position: 'absolute',
+      border: '1px black dashed',
+      left: `${event.x}px`,
+      top: `${event.y}px`,
+      width: `0px`,
+      height: `0px`,
+    });
+    this._recorder.document.body.appendChild(el);
+    this._down = { x: event.x, y: event.y, el };
+  }
+
+  onMouseMove(event: MouseEvent): void {
+    if (!this._down)
+      return;
+
+    consumeEvent(event);
+    const { x, y, width, height } = this.toBoundingBox(this._down, event);
+    Object.assign(this._down.el.style, {
+      left: `${x}px`,
+      top: `${y}px`,
+      width: `${width}px`,
+      height: `${height}px`,
+    });
+  }
+
+  onMouseUp(event: MouseEvent): void {
+    if (!this._down)
+      return;
+
+    consumeEvent(event);
+    const { x, y, width, height } = this.toBoundingBox(this._down, event);
+    this.cleanup();
+
+    this._recorder.delegate.recordAction?.({
+      name: 'snapshot',
+      x,
+      y,
+      width,
+      height,
+      signals: []
+    });
+    this._recorder.delegate.setMode?.('recording');
+  }
+
+  cleanup(): void {
+    this._down?.el.remove();
+    delete this._down;
+  }
+}
+
 class Overlay {
   private _recorder: Recorder;
   private _listeners: (() => void)[] = [];
@@ -796,6 +881,7 @@ class Overlay {
   private _assertVisibilityToggle: HTMLElement;
   private _assertTextToggle: HTMLElement;
   private _assertValuesToggle: HTMLElement;
+  private _snapshotButton: HTMLElement;
   private _offsetX = 0;
   private _dragState: { offsetX: number, dragStart: { x: number, y: number } } | undefined;
   private _measure: { width: number, height: number } = { width: 0, height: 0 };
@@ -842,6 +928,12 @@ class Overlay {
     this._assertValuesToggle.appendChild(this._recorder.document.createElement('x-div'));
     toolsListElement.appendChild(this._assertValuesToggle);
 
+    this._snapshotButton = this._recorder.document.createElement('x-pw-tool-item');
+    this._snapshotButton.title = 'Take a snapshot';
+    this._snapshotButton.classList.add('snapshot');
+    this._snapshotButton.appendChild(this._recorder.document.createElement('x-div'));
+    toolsListElement.appendChild(this._snapshotButton);
+
     this._updateVisualPosition();
     this._refreshListeners();
   }
@@ -865,6 +957,7 @@ class Overlay {
           'assertingText': 'recording-inspecting',
           'assertingVisibility': 'recording-inspecting',
           'assertingValue': 'recording-inspecting',
+          'takingSnapshot': 'recording-inspecting'
         };
         this._recorder.setMode(newMode[this._recorder.state.mode]);
       }),
@@ -879,6 +972,10 @@ class Overlay {
       addEventListener(this._assertValuesToggle, 'click', () => {
         if (!this._assertValuesToggle.classList.contains('disabled'))
           this._recorder.setMode(this._recorder.state.mode === 'assertingValue' ? 'recording' : 'assertingValue');
+      }),
+      addEventListener(this._snapshotButton, 'click', () => {
+        if (!this._snapshotButton.classList.contains('disabled'))
+          this._recorder.delegate.setMode?.(this._recorder.state.mode === 'takingSnapshot' ? 'recording' : 'takingSnapshot');
       }),
     ];
   }
@@ -902,6 +999,7 @@ class Overlay {
     this._assertTextToggle.classList.toggle('disabled', state.mode === 'none' || state.mode === 'standby' || state.mode === 'inspecting');
     this._assertValuesToggle.classList.toggle('active', state.mode === 'assertingValue');
     this._assertValuesToggle.classList.toggle('disabled', state.mode === 'none' || state.mode === 'standby' || state.mode === 'inspecting');
+    this._snapshotButton.classList.toggle('disabled', state.mode === 'takingSnapshot');
     if (this._offsetX !== state.overlay.offsetX) {
       this._offsetX = state.overlay.offsetX;
       this._updateVisualPosition();
@@ -1004,6 +1102,7 @@ export class Recorder {
       'assertingText': new TextAssertionTool(this, 'text'),
       'assertingVisibility': new InspectTool(this, true),
       'assertingValue': new TextAssertionTool(this, 'value'),
+      'takingSnapshot': new TakingSnapshotTool(this)
     };
     this._currentTool = this._tools.none;
     if (injectedScript.window.top === injectedScript.window) {
