@@ -723,4 +723,27 @@ await page.GetByLabel("Coun\\"try").ClickAsync();`);
     expect.soft(sources1.get('Java')!.text).toContain(`assertThat(page.getByRole(AriaRole.TEXTBOX)).isVisible()`);
     expect.soft(sources1.get('C#')!.text).toContain(`await Expect(page.GetByRole(AriaRole.Textbox)).ToBeVisibleAsync()`);
   });
+
+  test.only('should take screenshot', async ({ openRecorder }) => {
+    const recorder = await openRecorder();
+
+    await recorder.setContentAndWait(`<div style="width:500px;height:500px"></div>`);
+
+    await recorder.page.click('x-pw-tool-item.snapshot');
+    await recorder.hoverOverElement('div', { position: { x: 10, y: 10 } });
+    const [sources1] = await Promise.all([
+      recorder.waitForOutput('JavaScript', '.toHaveScreenshot'),
+      async () => {
+        await recorder.page.mouse.down();
+        await recorder.page.mouse.move(100, 100);
+        await recorder.page.mouse.up();
+      },
+    ]);
+
+    expect.soft(sources1.get('JavaScript')!.text).toContain(`await expect(page).toHaveScreenshot({ clip:`);
+    // expect.soft(sources1.get('Python')!.text).toContain(`expect(page.get_by_role("textbox")).to_be_visible()`);
+    // expect.soft(sources1.get('Python Async')!.text).toContain(`await expect(page.get_by_role("textbox")).to_be_visible()`);
+    // expect.soft(sources1.get('Java')!.text).toContain(`assertThat(page.getByRole(AriaRole.TEXTBOX)).isVisible()`);
+    // expect.soft(sources1.get('C#')!.text).toContain(`await Expect(page.GetByRole(AriaRole.Textbox)).ToBeVisibleAsync()`);
+  });
 });
