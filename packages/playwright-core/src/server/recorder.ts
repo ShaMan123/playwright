@@ -634,6 +634,19 @@ class ContextRecorder extends EventEmitter {
       const { options } = toClickOptions(action);
       await perform('click', { selector: action.selector }, callMetadata => frame.click(callMetadata, action.selector, { ...options, timeout: kActionTimeout, strict: true }));
     }
+    if (action.name === 'move') {
+      // const modifiers = toModifiers(action.modifiers);
+      // const options: MouseClickOptions = {};
+      // if (action.button !== 'left')
+      //   options.button = action.button;
+      // if (modifiers.length)
+      //   options.modifiers = modifiers;
+      // if (action.position)
+      //   options.position = action.position;
+      await perform('move', {  }, callMetadata =>
+        Promise.resolve()
+      );
+    }
     if (action.name === 'press') {
       const modifiers = toModifiers(action.modifiers);
       const shortcut = [...modifiers, action.key].join('+');
