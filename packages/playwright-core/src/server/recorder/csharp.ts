@@ -150,10 +150,17 @@ export class CSharpLanguageGenerator implements LanguageGenerator {
         const shortcut = [...modifiers, action.key].join('+');
         return `await ${subject}.${this._asLocator(action.selector)}.PressAsync(${quote(shortcut)});`;
       }
+      case 'move':
+        // const options: MouseClickOptions = action.button !== 'left' ? { button: action.button } : {};
+        return [
+
+        ].join('\n');
       case 'navigate':
         return `await ${subject}.GotoAsync(${quote(action.url)});`;
       case 'select':
         return `await ${subject}.${this._asLocator(action.selector)}.SelectOptionAsync(${formatObject(action.options)});`;
+      case 'snapshot':
+        return 'snapshot();';
       case 'assertText':
         return `await Expect(${subject}.${this._asLocator(action.selector)}).${action.substring ? 'ToContainTextAsync' : 'ToHaveTextAsync'}(${quote(action.text)});`;
       case 'assertChecked':

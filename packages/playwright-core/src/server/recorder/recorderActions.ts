@@ -21,12 +21,14 @@ export type ActionName =
   'click' |
   'closePage' |
   'fill' |
+  'move' |
   'navigate' |
   'openPage' |
   'press' |
   'select' |
   'uncheck' |
   'setInputFiles' |
+  'snapshot' |
   'assertText' |
   'assertValue' |
   'assertChecked' |
@@ -67,6 +69,15 @@ export type NavigateAction = ActionBase & {
   url: string,
 };
 
+export type MoveAction = ActionBase & {
+  name: 'move';
+  button: 'left' | 'middle' | 'right';
+  modifiers: number;
+  hover: Point & { selector: string; };
+  down: Point;
+  up: Point;
+};
+
 export type OpenPageAction = ActionBase & {
   name: 'openPage',
   url: string,
@@ -95,6 +106,14 @@ export type SetInputFilesAction = ActionBase & {
   files: string[],
 };
 
+export type SnapshotAction = ActionBase & {
+  name: 'snapshot',
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+};
+
 export type AssertTextAction = ActionBase & {
   name: 'assertText',
   selector: string,
@@ -119,7 +138,7 @@ export type AssertVisibleAction = ActionBase & {
   selector: string,
 };
 
-export type Action = ClickAction | CheckAction | ClosesPageAction | OpenPageAction | UncheckAction | FillAction | NavigateAction | PressAction | SelectAction | SetInputFilesAction | AssertTextAction | AssertValueAction | AssertCheckedAction | AssertVisibleAction;
+export type Action = ClickAction | CheckAction | ClosesPageAction | OpenPageAction | UncheckAction | FillAction | NavigateAction | MoveAction | PressAction | SelectAction | SetInputFilesAction | SnapshotAction | AssertTextAction | AssertValueAction | AssertCheckedAction | AssertVisibleAction;
 export type AssertAction = AssertCheckedAction | AssertValueAction | AssertTextAction | AssertVisibleAction;
 
 // Signals.

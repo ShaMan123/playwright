@@ -121,10 +121,42 @@ export class JavaScriptLanguageGenerator implements LanguageGenerator {
         const shortcut = [...modifiers, action.key].join('+');
         return `await ${subject}.${this._asLocator(action.selector)}.press(${quote(shortcut)});`;
       }
+      case 'move':
+        // const modifiers = toModifiers(action.modifiers);
+        const options: MouseClickOptions = action.button !== 'left' ? { button: action.button } : {};
+        const modifiers = toModifiers(action.modifiers);
+        const hoverOptionsString = formatOptions({
+          position: { x: action.hover.x, y: action.hover.y },
+        }, false);
+        const buttonOptionsString = formatOptions(options, false);
+        const dx = action.up.x - action.down.x;
+        const dy = action.up.y - action.down.y;
+        const magnitude = Math.hypot(dx, dy); // important for accuracy, but slows down the test
+        const move = [
+          `await ${subject}.${this._asLocator(action.hover.selector)}.hover(${hoverOptionsString});`,
+          `await ${subject}.mouse.down(${buttonOptionsString});`,
+          `await ${subject}.mouse.move(${action.up.x}, ${action.up.y}, { steps: ${Math.round(magnitude)} });`,
+          `await ${subject}.mouse.up(${buttonOptionsString});`,
+        ];
+        if (modifiers.length){
+          move.unshift(...modifiers.map(modifier => `await page.keyboard.down(${quote(modifier)});`));
+          move.push(...modifiers.map(modifier => `await page.keyboard.up(${quote(modifier)});`));
+        }
+        return move.join('\n');
       case 'navigate':
         return `await ${subject}.goto(${quote(action.url)});`;
       case 'select':
         return `await ${subject}.${this._asLocator(action.selector)}.selectOption(${formatObject(action.options.length > 1 ? action.options : action.options[0])});`;
+      case 'snapshot':
+        const optionsString = formatOptions({
+          clip: {
+            x: action.x,
+            y: action.y,
+            width: action.width,
+            height: action.height,
+          }
+        }, false);
+        return `await expect(${subject}).toHaveScreenshot(${optionsString});`;
       case 'assertText':
         return `${this._isTest ? '' : '// '}await expect(${subject}.${this._asLocator(action.selector)}).${action.substring ? 'toContainText' : 'toHaveText'}(${quote(action.text)});`;
       case 'assertChecked':
