@@ -219,7 +219,7 @@ class RecordActionTool implements RecorderTool {
       y: number;
       selector: string;
     }
-  }
+  };
 
   constructor(recorder: Recorder) {
     this._recorder = recorder;
@@ -870,8 +870,8 @@ class TakingSnapshotTool implements RecorderTool {
   }
 
   onPointerDown(event: PointerEvent): void {
-    event.stopImmediatePropagation()
-    event.stopPropagation()
+    event.stopImmediatePropagation();
+    event.stopPropagation();
   }
 
   onMouseDown(event: MouseEvent): void {
