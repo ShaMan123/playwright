@@ -64,6 +64,7 @@ const iconNames = [
   'check',
   'close',
   'pass',
+  'camera'
 ];
 
 (async () => {

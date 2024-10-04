@@ -112,10 +112,19 @@ export class PythonLanguageGenerator implements LanguageGenerator {
         const shortcut = [...modifiers, action.key].join('+');
         return `${subject}.${this._asLocator(action.selector)}.press(${quote(shortcut)})`;
       }
+      case 'move':
+        // const modifiers = toModifiers(action.modifiers);
+        // const options: MouseClickOptions = action.button !== 'left' ? { button: action.button } : {};
+        // const optionsString = formatOptions(options, false);
+        return [
+
+        ].join('\n');
       case 'navigate':
         return `${subject}.goto(${quote(action.url)})`;
       case 'select':
         return `${subject}.${this._asLocator(action.selector)}.select_option(${formatValue(action.options.length === 1 ? action.options[0] : action.options)})`;
+      case 'snapshot':
+        return 'snapshot();';
       case 'assertText':
         return `expect(${subject}.${this._asLocator(action.selector)}).${action.substring ? 'to_contain_text' : 'to_have_text'}(${quote(action.text)})`;
       case 'assertChecked':

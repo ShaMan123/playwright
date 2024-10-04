@@ -234,6 +234,11 @@ x-pw-tool-item.succeeded > x-div {
   background-color: #388a34 !important;
 }
 
+x-pw-tool-item.snapshot > x-div {
+  /* codicon: camera */
+  clip-path: url(#icon-camera);
+}
+
 x-pw-overlay {
   position: absolute;
   top: 0;
